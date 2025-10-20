@@ -19,8 +19,7 @@ import torch
 print("⬇️ Загружаем модель Zeroscope v2 XL...")
 pipe = DiffusionPipeline.from_pretrained(
     "cerspense/zeroscope_v2_XL",
-    torch_dtype=torch.float16,
-    variant="fp16"
+    torch_dtype=torch.float16  # Опционально, если нужно сэкономить память
 )
 print("✅ Модель загружена в кэш Hugging Face.")
 EOF

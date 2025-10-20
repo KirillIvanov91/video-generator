@@ -9,7 +9,7 @@ print("🔄 Загружается модель...")
 pipe = DiffusionPipeline.from_pretrained(
     "cerspense/zeroscope_v2_XL",
     torch_dtype=torch.float16,
-    variant="fp16"
+    
 ).to("cuda")
 print("✅ Модель готова!")
 
