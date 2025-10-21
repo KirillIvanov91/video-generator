@@ -5,6 +5,7 @@ FROM nvidia/cuda:12.1.1-runtime-ubuntu22.04
 RUN apt update && apt install -y \
     python3 python3-pip ffmpeg git wget \
     && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y ffmpeg
 
 WORKDIR /app
 
