@@ -1,27 +1,44 @@
+from math import e
 from fastapi import FastAPI
 from pydantic import BaseModel
-from diffusers import DiffusionPipeline
+from diffusers.pipelines.pipeline_utils import DiffusionPipeline
 import torch, uuid, os
+from diffusers.pipelines.text_to_video_synthesis.pipeline_text_to_video_synth import TextToVideoSDPipeline
+from torchvision.io import write_video
 
 app = FastAPI()
 
 print("🔄 Загружается модель...")
-pipe = DiffusionPipeline.from_pretrained(
+pipe = TextToVideoSDPipeline.from_pretrained(
     "cerspense/zeroscope_v2_XL",
-    torch_dtype=torch.float16,
+    torch_dtype=torch.float16
     
-).to("cuda")
+).pipe.to("cuda")
 print("✅ Модель готова!")
 
 class VideoRequest(BaseModel):
     prompt: str
 
 @app.post("/generate")
-def generate(req: VideoRequest):
+async def generate(req: VideoRequest):
     filename = f"{uuid.uuid4().hex}.mp4"
     os.makedirs("output", exist_ok=True)
     print(f"🎬 Генерация: {req.prompt}")
-    result = pipe(req.prompt, num_frames=120).videos[0]
+    video_tensor = pipe(req.prompt, num_frames=120).videos[0]  # Получаем тензор (T, H, W, C)
+    print(f"GPU доступен: {torch.cuda.is_available()}")
+    print(f"Текущее устройство: {next(pipe.parameters()).device}")
+    result = pipe(req.prompt, num_frames=60).videos[0]
     path = f"output/{filename}"
+    write_video(path, video_tensor.permute(0, 3, 1, 2), fps=8)  # Перемещаем каналы и задаем FPS
     result.save(path)
     return {"video_path": path}
+
+@app.get("/")
+async def read_root():
+    return {"message": "Сервис генерации видео запущен! Используйте эндпоинт /generate."}
+
+
+
+
+
+#docker run --gpus all -p 8000:8000 -v ${PWD}:/app zeroscope-server

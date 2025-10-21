@@ -6,4 +6,4 @@ safetensors
 imageio[ffmpeg]
 fastapi
 uvicorn
-
+torchvision

@@ -14,14 +14,17 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Загружаем модель Zeroscope v2 XL при сборке
 RUN python3 - <<'EOF'
-from diffusers import DiffusionPipeline
+from diffusers import TextToVideoSDPipeline
 import torch
-print("⬇️ Загружаем модель Zeroscope v2 XL...")
-pipe = DiffusionPipeline.from_pretrained(
+
+print("⬇️ Загружаем модель Zeroscope v2 XL (Text-to-Video)...")
+
+pipe = TextToVideoSDPipeline.from_pretrained(
     "cerspense/zeroscope_v2_XL",
-    torch_dtype=torch.float16  # Опционально, если нужно сэкономить память
+    torch_dtype=torch.float16
 )
-print("✅ Модель загружена в кэш Hugging Face.")
+
+print("✅ Модель закэширована в Hugging Face.")
 EOF
 
 # Копируем серверный код
