@@ -1,6 +1,6 @@
 torch
-diffusers==0.30.0
-transformers
+diffusers==0.35.1
+transformers==4.57.0
 accelerate
 safetensors
 imageio[ffmpeg]
