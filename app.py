@@ -77,4 +77,4 @@ async def read_root():
 
 
 
-#docker run --gpus all -p 8000:8000 -v ${PWD}:/app zeroscope-server
+#docker run --gpus all -p 8080:8080 -v ${PWD}:/app zeroscope-server

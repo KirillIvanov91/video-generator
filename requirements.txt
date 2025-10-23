@@ -1,7 +1,7 @@
 
 
 diffusers==0.35.1
-transformers==4.57.0
+transformers==4.33.2
 accelerate==0.23.0
 safetensors==0.4.3
 imageio[ffmpeg]==2.31.1
