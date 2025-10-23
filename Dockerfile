@@ -10,7 +10,7 @@ RUN apt update && apt install -y \
 RUN pip install --no-cache-dir torch==2.2.1+cu121 torchvision==0.17.1+cu121 -f https://download.pytorch.org/whl/torch_stable.html
 
 # Сборка xFormers из исходников под установленный PyTorch
-RUN git clone https://github.com/facebookresearch/xformers.git \
+RUN git clone --recursive https://github.com/facebookresearch/xformers.git \
     && cd xformers \
     && pip install -e . \
     && cd .. \
