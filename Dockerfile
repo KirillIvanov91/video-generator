@@ -1,33 +1,50 @@
+# =========================================
+#  Базовый образ: минимальный Python + CUDA
+# =========================================
+FROM python:3.10-slim
 
-FROM nvidia/cuda:12.1.1-runtime-ubuntu22.04
+# Добавляем CUDA библиотеки (для работы GPU)
+RUN apt-get update && apt-get install -y wget gnupg && \
+    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
+    dpkg -i cuda-keyring_1.1-1_all.deb && \
+    apt-get update && apt-get install -y --no-install-recommends \
+        cuda-cudart-12-1 cuda-compat-12-1 \
+        libcublas-12-1 libcufft-12-1 libcurand-12-1 libcusparse-12-1 libcusolver-12-1 \
+        ffmpeg git wget && \
+    rm -rf /var/lib/apt/lists/*
 
-# Установка Python, pip, ffmpeg, git и libcudnn
-RUN apt update && apt install -y \
-    python3 python3-pip ffmpeg git wget libcudnn8=8.9.2.26-1+cuda12.1 \
-    && rm -rf /var/lib/apt/lists/*
+# ===============================
+# Установка совместимых библиотек
+# ===============================
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir \
+        numpy==1.26.4 \
+        torch==2.1.2+cu121 \
+        torchvision==0.16.2+cu121 \
+        xformers==0.0.23.post1 \
+        -f https://download.pytorch.org/whl/torch_stable.html
 
-# Установка PyTorch + torchvision с CUDA 12.1
-RUN pip install --no-cache-dir torch==2.2.1+cu121 torchvision==0.17.1+cu121 -f https://download.pytorch.org/whl/torch_stable.html
+# Проверка версий (без GPU)
+RUN python3 -c "import torch, torchvision, xformers; \
+print(f'✅ Torch {torch.__version__} | TV {torchvision.__version__} | XF {xformers.__version__}'); \
+print('⚙️ GPU активируется только при запуске (--gpus all)')"
 
-# Сборка xFormers из исходников под установленный PyTorch
-RUN git clone --recursive https://github.com/facebookresearch/xformers.git \
-    && cd xformers \
-    && pip install -e . \
-    && cd .. \
-    && rm -rf xformers
-
-# Создание рабочей директории
+# ===============================
+# Установка зависимостей приложения
+# ===============================
 WORKDIR /app
-
-# Копирование requirements.txt и установка остальных зависимостей
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# ===============================
 # Копирование приложения
+# ===============================
 COPY app.py .
 
-# Открытие порта
+# ===============================
+# Запуск FastAPI
+# ===============================
 EXPOSE 8080
-
-# Команда запуска
+ENV PYTHONUNBUFFERED=1
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8080"]
+

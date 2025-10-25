@@ -23,17 +23,30 @@ output_dir.mkdir(exist_ok=True)
 print("🔄 Загружается модель...")
 
 try:
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+
     pipe = TextToVideoSDPipeline.from_pretrained(
     "cerspense/zeroscope_v2_XL",
         torch_dtype=torch.float16
-    ).to("cuda")
+    ).to(device)
 
-    print("✅ Модель готова к работе!")
+    
 
     # Оптимизация памяти и скорости
     pipe.enable_model_cpu_offload()
-    pipe.enable_xformers_memory_efficient_attention()
     
+    if torch.cuda.is_available() and vram_gb >= 6:
+        try:
+            pipe.enable_xformers_memory_efficient_attention()
+            print("✅ Memory-efficient attention включен")
+        except Exception as e:
+            print(f"⚠️ Не удалось включить xFormers: {e}")
+    else:
+        print("⚠️ Слишком мало VRAM — xFormers не включен")
+
+    print("✅ Модель готова к работе!")
 except Exception as exc:
     raise RuntimeError(f"Ошибка загрузки модели: {exc}")
 
